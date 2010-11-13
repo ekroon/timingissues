@@ -18,7 +18,7 @@ body { font-size: 32px;}
 $(document).ready(function() {
    	var tillDate = new Date(); 
 	tillDate.setMinutes(60);
-	$('#countdown').countdown({until: tillDate, format: 'MS', layout: '{mn}:{snn}:{s100}'});
+	$('#countdown').countdown({until: tillDate, format: 'MS', layout: '{mn}:{snn}'});
 	
 // 	$('#startstop').toggle(function() { 
 //         $(this).text('Resume'); 
