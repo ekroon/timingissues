@@ -14,7 +14,9 @@ body { font-size: 32px;}
 </style>
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.3.min.js"></script>
 <script type="text/javascript" src="js/countdown/jquery.countdown.min.js"></script>
+<script type="text/javascript" src="socket.io/socket.io.js"></script>
 <script type="text/javascript">
+var socket;
 $(document).ready(function() {
    	var tillDate = new Date(); 
 	tillDate.setMinutes(60);
@@ -34,7 +36,11 @@ $(document).ready(function() {
     {
         ResizeFont();
     }).trigger('resize');
-
+	
+	socket = new io.Socket();
+	socket.connect();
+	socket.on('message', ProcessMessage);
+//	socket.on('connect', function() {});
 
 	
  });
@@ -47,6 +53,19 @@ function ResizeFont() {
 	var newFontSize = Math.floor(fontsize * percentage);
 	$("body").css("font-size", newFontSize + "px");
 }
+
+function SetScore(scoreObject) {
+	$('#home-score').html(scoreObject.home);
+	$('#away-score').html(scoreObject.away);
+}
+
+function ProcessMessage(messageString) {
+	var message = $.parseJSON(messageString);
+	if (message.type == 'score-update') {
+		SetScore(message.data);
+	}
+}
+
 </script>
 </head>
 <body>
