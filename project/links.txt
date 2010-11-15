@@ -1,0 +1,4 @@
+* https://github.com/LearnBoost/Socket.IO
+* https://github.com/LearnBoost/Socket.IO-node
+* https://github.com/senchalabs/Connect
+
