@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Scoreboard v0</title>
+<link href="css/screen.css" rel="stylesheet" type="text/css" />
+<style>
+</style>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.4.3.min.js"></script>
+<script type="text/javascript" src="socket.io/socket.io.js"></script>
+<script type="text/javascript">
+var socket;
+$(document).ready(function() {
+ 	$('#update').click(SetScore);
+	
+	socket = new io.Socket();
+	socket.connect();
+//	socket.on('message', ProcessMessage);
+//	socket.on('connect', function() {});
+
+	
+ });
+
+function SetScore() {
+	var message = {type : 'score-update', data : {home: $('#home').val(), away : $('#away').val()}};
+	socket.send(message);
+	
+}
+
+function ProcessMessage(messageString) {
+	var message = $.parseJSON(messageString);
+	if (message.type == 'score-update') {
+		SetScore(message.data);
+	}
+}
+
+</script>
+</head>
+<body>
+
+home: <input type="textbox" id="home" /> <br />
+away: <input type="textbox" id="away" /> <br />
+<button type="button" id="update" >Update score</button>
+
+</body>
+</html>

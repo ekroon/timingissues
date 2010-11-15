@@ -34,10 +34,17 @@ var server = http.createServer(function(request, response) {
 });
 server.listen(8080);
 
+var MessageHandler = function(message) {
+	console.log('message received: '  + message);
+	socket.broadcast(JSON.stringify(message));
+}
+
 var socket = io.listen(server);
 socket.on('connection', function(client) {
-	var message = {type : 'score-update', data : {home : 1, away: 2}}; 
-	setTimeout(function() {client.send(JSON.stringify(message));}, 5000);
-});
+// 	var message = {type : 'score-update', data : {home : 1, away: 2}}; 
+// 	setTimeout(function() {client.send(JSON.stringify(message));}, 5000);
+	client.on('message', MessageHandler);	
+ });
+
 
 sys.puts("Server running at http://localhost:8080/");
