@@ -15,32 +15,22 @@ body { font-size: 32px;}
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.4.3.min.js"></script>
 <script type="text/javascript" src="js/countdown/jquery.countdown.min.js"></script>
 <script type="text/javascript" src="socket.io/socket.io.js"></script>
+<script type="text/javascript" src="js/IObus.js"></script>
 <script type="text/javascript">
 var socket;
 $(document).ready(function() {
    	var tillDate = new Date(); 
 	tillDate.setMinutes(60);
 	$('#countdown').countdown({until: tillDate, format: 'MS', layout: '{mn}:{snn}'});
-	
-// 	$('#startstop').toggle(function() { 
-//         $(this).text('Resume'); 
-//         $('#countdown').countdown('pause'); 
-//     }, 
-//     function() { 
-//         $(this).text('Pause'); 
-//         $('#countdown').countdown('resume'); 
-//     } 
-// );
 
 	$(window).bind('resize', function()
     {
         ResizeFont();
     }).trigger('resize');
 	
-	socket = new io.Socket();
-	socket.connect();
-	socket.on('message', ProcessMessage);
-//	socket.on('connect', function() {});
+	var bus = new IOBus('scoreboard', {test: "value" }, {test2: "value"} );
+	bus.subscribe('score-update', SetScore)
+	bus.connect();
 
 	
  });

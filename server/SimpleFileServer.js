@@ -35,8 +35,9 @@ var server = http.createServer(function(request, response) {
 server.listen(8080);
 
 var MessageHandler = function(message) {
-	console.log('message received: '  + message);
+	console.log('message received: '  + message.type);
 	socket.broadcast(JSON.stringify(message));
+	console.log('message send ');
 }
 
 var socket = io.listen(server);
