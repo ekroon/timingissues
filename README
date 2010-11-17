@@ -1,1 +1,9 @@
 Distributes scoreboard and match results
+
+Installation
+============
+copy config/configuration.sample.js to config/configuration.js
+
+Running
+=======
+Start server/SimpleFileServer with node
