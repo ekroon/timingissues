@@ -1,0 +1,24 @@
+body {
+	font-size: 1em;
+}
+
+#main {
+	width: 200px;
+}
+
+.team {
+	float: left;
+}
+
+.score {
+	float: right;
+}
+
+.score-buttons {
+	float: right;
+}
+
+.team-wrapper {
+	clear: both;
+}
+

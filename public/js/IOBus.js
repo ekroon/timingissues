@@ -14,7 +14,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 	
 	IOBus.prototype.subscribe = function(uri, fn) 
 	{
-		if (!(name in this._subscriptions)) this._subscriptions[uri] = [];
+		if (!(uri in this._subscriptions)) this._subscriptions[uri] = [];
 		this._subscriptions[uri].push(fn);
 		
 		this.sendMessage('subscribe', uri);
@@ -37,10 +37,17 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		
 		var self = this;
 		self._socket
-		.on('connect', function() {this.connected = true; self.onConnect();})
+		.on('connect', function() {
+			self.connected = true;
+			self.onConnect();
+			self.sendMessage('client-time', {time : new Date() });
+			for (uri in self._subscriptions) {
+				self.sendMessage('subscribe', uri);
+			}
+		})
 		.on('disconnect', function () 
 				{ 
-					this.connected = false;
+					self.connected = false;
 					if (self.autoReconnect) 
 					{
 						self.connect();
