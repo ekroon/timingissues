@@ -6,9 +6,11 @@ fs = require("fs"),
 express = require("express")
 io = require('socket.io');
 
-var config = require(__dirname+'/../config/configuration.js');
-var app = express.createServer();
-var fileRoot = __dirname + '/../public';
+var applicationRoot = path.normalize(__dirname + '/..');
+var publicRoot = applicationRoot + '/public';
+var viewsRoot = applicationRoot + '/views';
+
+var config = require(applicationRoot + '/config/configuration.js');
 var portNumber = parseInt(process.argv[2], 10);
 if ('NaN' == portNumber.toString()) {
     portNumber = config.portNumber || 8080;
@@ -21,8 +23,15 @@ if ((config.listen || null) == null) {
     server.close();
 }
 
+var app = express.createServer();
 app.configure(function() {
-    app.use(express.staticProvider(fileRoot));
+    app.set('views', viewsRoot);
+    app.register('.html', require('ejs'));
+    app.use(express.staticProvider(publicRoot));
+});
+
+app.get('/scoreboard/:field?', function(req, res) {
+    res.render('scoreboard.html', {layout: false});
 });
 
 app.listen(portNumber, config.listen || null, function() {
