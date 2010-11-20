@@ -6,4 +6,4 @@ copy config/configuration.sample.js to config/configuration.js
 
 Running
 =======
-Start server/SimpleFileServer with node
+Start server/Server.js with node
