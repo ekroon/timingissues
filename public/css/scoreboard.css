@@ -25,43 +25,66 @@ div {
 }
 
 #home-score {
-	left: 0%;
-	top: 25%;
+	left: 1%;
 }
 
 #away-score {
-	right: 0%;
-	top: 25%;
+	right: 5%;
+}
+
+.score {
+	top: 10%;	
 }
 
 #home-team {
 	left: 1%;
-	top: 70%;
 }
 
 #away-team {
 	right: 1%;
-	top: 70%;
+}
+
+.team {
+	top: 85%;
 }
 
 .score {
-	height: 40%;
-	width: 25%;
-	font-size: 600%;
+	height: 60%;
+	width: 40%;
+	font-size: 1100%;
 	text-align: center;
 }
 
-#clock {
+.clock-big {
 	left: 30%;
 	width: 40%;
 	top: 30%;
 	height: 25%;
 	text-align: center;
 	font-size: 400%;
+	visibility: show;
+	z-index: 2;
+	background-color: #fff;
+	border: solid 1px #000;
+}
+
+.clock {
+	left: 45%;
+	top: 35%;
+	width: 10%;
+	text-align: center;
+	font-size: 100%;
+	visibility: show;
+	z-index: 1;
+	background-color: #fff;
 }
 
 
 .border {
 	border: solid 1px #000;
+}
+
+.red {
+	color: #f00;
 }
 

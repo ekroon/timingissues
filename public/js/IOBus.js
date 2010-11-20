@@ -6,6 +6,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		};
 		this.options = $.extend(this.options, options);
 		this.connected = false;
+		this.reconnecting = false;
 		this._subscriptions = {};
 		
 	}
@@ -17,16 +18,14 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		if (!(uri in this._subscriptions)) this._subscriptions[uri] = [];
 		this._subscriptions[uri].push(fn);
 		
-		this.sendMessage('subscribe', uri);
+		this.send('subscribe', uri);
 			
 	}
 		
 	IOBus.prototype.messageHandler = function(messageString) 
 	{
 		var message = $.parseJSON(messageString);
-		
-		if (message.uri && message.uri in this._subscriptions){
-			alert('');
+		if (message.uri && message.data && message.uri in this._subscriptions){
 				for (var i = 0, ii = this._subscriptions[message.uri].length; i < ii; i++) 
 					this._subscriptions[message.uri][i].apply(this, [message.data]);
 		}
@@ -40,9 +39,12 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		.on('connect', function() {
 			self.connected = true;
 			self.onConnect();
-			self.send('client-time', {time : new Date() });
-			for (uri in self._subscriptions) {
-				self.send('subscribe', uri);
+			self.send('client-time', '',{time : new Date() });
+			if (self.reconnecting) {
+				for (uri in self._subscriptions) {
+					self.send('subscribe', uri);
+				}
+				self.reconnecting = false;
 			}
 		})
 		.on('disconnect', function () 
@@ -51,6 +53,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 					if (self.autoReconnect) 
 					{
 						self.connect();
+						self.reconnecting = true;
 					}
 					self.onDisconnect();
 				}
@@ -58,9 +61,9 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		.on('message', function(message){self.messageHandler(message);}).connect();
 	};
 		
-	IOBus.prototype.send = function (type, uri, data) 
+	IOBus.prototype.send = function (method, uri, data) 
 	{
-		this._socket = this._socket.send({type: type, uri : uri, data : data});
+		this._socket = this._socket.send({method: method, uri : uri, data : data});
 	};
 	
 	
