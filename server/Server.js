@@ -36,6 +36,9 @@ app.get('/scoreboard/:field?', function(req, res) {
 app.get('/scorer/:field?', function(req, res) {
     res.render('scorer.html', {layout: false});
 });
+app.get('/time', function(req, res) {
+    res.send(JSON.stringify(new Date()));
+});
 
 app.listen(portNumber, config.listen || null, function() {
     sys.puts("Server running at http://"+(config.listen || "INADDR_ANY")+":"+portNumber+"/");
@@ -50,4 +53,3 @@ app.listen(portNumber, config.listen || null, function() {
         socket.broadcast(JSON.stringify(message));
     }
 });
-
