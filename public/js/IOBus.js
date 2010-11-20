@@ -40,9 +40,9 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		.on('connect', function() {
 			self.connected = true;
 			self.onConnect();
-			self.sendMessage('client-time', {time : new Date() });
+			self.send('client-time', {time : new Date() });
 			for (uri in self._subscriptions) {
-				self.sendMessage('subscribe', uri);
+				self.send('subscribe', uri);
 			}
 		})
 		.on('disconnect', function () 
@@ -58,9 +58,9 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		.on('message', function(message){self.messageHandler(message);}).connect();
 	};
 		
-	IOBus.prototype.sendMessage = function (type, data) 
+	IOBus.prototype.send = function (type, uri, data) 
 	{
-		this._socket = this._socket.send({uri : type, data : data});
+		this._socket = this._socket.send({type: type, uri : uri, data : data});
 	};
 	
 	

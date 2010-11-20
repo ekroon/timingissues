@@ -11,22 +11,22 @@
 	
 	<fieldset>
 		<legend id="home-team">Home team name</legend>
-		<input type="textbox" id="home-score"  size="2" />
+		<input type="textbox" id="home-score"  size="2" value="0" readonly />
 		<div class="score-buttons"><button type="button" id="home-scored" >+</button>
 		<button type="button" id="home-correction" >-</button>
 	</fieldset>
 	
 	<fieldset>
 		<legend id="away-team">Away team name</legend>
-		<input type="textbox" id="away-score"  size="2" />
-		<div class="score-buttons"><button type="button" id="away-scored" >+</button>
+		<input type="textbox" id="away-score"  size="2" value="0" readonly />
+		<div class="score-buttons"><button type="button" id="away-scored"  >+</button>
 		<button type="button" id="away-correction" >-</button>
 	</fieldset>
 		
 	<fieldset>
-		<button type="button" id="update-score" >update</button> <br />
-		<input type="checkbox" id="finalize-score" value="final score"/>
-		<label for="finalize-score">final score</label> 
+		<button type="button" id="update-score" disabled >update</button> <br />
+		<input type="checkbox" id="final-score"/>
+		<label for="final-score">final score</label> 
 	</fieldset>				
 
 </div>
