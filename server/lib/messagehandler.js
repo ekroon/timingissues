@@ -8,7 +8,8 @@ var messagehandler = function messagehandler(app) {
     socket.on('clientMessage', function(message, client) {subscribeHandler(message, client)});
 
     var subscribeHandler = function(message, client) {
-        if (message.method && message.uri) {
+        
+        if (message.method != undefined && message.uri != undefined) {
 					if (message.method == 'subscribe') {
 						console.log(client.sessionId + ' subscribe: '  + message.uri);
 						clientregistry.subscribe(message.uri, client);
@@ -21,12 +22,16 @@ var messagehandler = function messagehandler(app) {
 						console.log('put: '  + message.uri);
 						if (message.uri == '/scorer') {
 							var clients = clientregistry.getClients('/scoreboard');
-							if (config.debug) console.log('returned clients: ' + clients.length);
 							sendMessage(clients, 
 							{method : 'get', uri : '/scoreboard', 
 								data : {home : message.data.home, away : message.data.away}});
 						}
 					}
+        }
+        
+        if (message.callback != undefined) {
+        	console.log('sending callback to: ' + client.sessionId);
+        	client.send(JSON.stringify({method : 'callback', callback : message.callback}));
         }
     }
     

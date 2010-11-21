@@ -8,6 +8,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		this.connected = false;
 		this.reconnecting = false;
 		this._subscriptions = {};
+		this._callback = [];
 		
 	}
 	
@@ -46,6 +47,12 @@ define( ["../socket.io/socket.io.js"] ,function() {
 	IOBus.prototype.messageHandler = function(messageString) 
 	{
 		var message = $.parseJSON(messageString);
+		
+		if (message.method != undefined && message.method == 'callback') {
+			this._callback[message.callback].apply(this);
+			this._callback.splice(message.callback,1);
+		}
+		
 		if (message.uri && message.data && message.uri in this._subscriptions){
 				for (var i = 0, l = this._subscriptions[message.uri].length; i < l; i++) {
 					this._subscriptions[message.uri][i].apply(this, [message.data]);
@@ -85,9 +92,14 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		return this;
 	};
 		
-	IOBus.prototype.send = function (method, uri, data) 
+	IOBus.prototype.send = function (method, uri, data, fn) 
 	{
-		this._socket = this._socket.send({method: method, uri : uri, data : data});
+		var msg = {method: method, uri : uri, data : data};
+		if (fn) {
+			this._callback.push(fn);
+			msg.callback = this._callback.length - 1;
+		}
+		this._socket = this._socket.send(msg);
 		return this;
 	};
 	

@@ -22,3 +22,8 @@ body {
 	clear: both;
 }
 
+#updated-info {
+	font-weight: bold;
+	color: #0d0;
+	visibility: hidden;
+}

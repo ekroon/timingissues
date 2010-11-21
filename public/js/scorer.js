@@ -4,7 +4,12 @@ require(["IOBus", "util"], function(IOBus, util) {
 		var data = 
 		{home: homeScore.get(), away : awayScore.get(),
 			finalScore : $('#final-score:checked').val()==null};
-		bus.send('put', util.getPath() + util.getQuery(), data);
+		bus.send('put', util.getPath() + util.getQuery(), data, showUpdated);
+	}
+	
+	function showUpdated() {
+		$("#updated-info").css('visibility','visible');
+		setTimeout(function(){$("#updated-info").css('visibility','hidden');}, 1000);
 	}
 	
 	var bus = new IOBus();
