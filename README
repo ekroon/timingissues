@@ -2,7 +2,7 @@ Distributes scoreboard and match results
 
 Installation
 ============
-copy config/configuration.sample.js to config/configuration.js
+copy config/configuration.js_template to config/configuration.js
 
 Running
 =======
