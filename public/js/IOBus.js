@@ -2,7 +2,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 	var IOBus = function (options) {
 		
 		this.options = { 
-			autoReconnect : false
+			autoReconnect : true
 		};
 		this.options = $.extend(this.options, options);
 		this.connected = false;
@@ -15,21 +15,42 @@ define( ["../socket.io/socket.io.js"] ,function() {
 	
 	IOBus.prototype.subscribe = function(uri, fn) 
 	{
-		if (!(uri in this._subscriptions)) this._subscriptions[uri] = [];
+		if (!(uri in this._subscriptions)) {
+			this._subscriptions[uri] = [];
+			this.send('subscribe', uri);	
+		}	
 		this._subscriptions[uri].push(fn);
 		
-		this.send('subscribe', uri);
-			
+		return this;
+		
 	}
+	
+	IOBus.prototype.unsubscribe = function(uri, fn){
+		if (uri in this._subscriptions){
+			for (var i = 0, l = this._subscriptions[uri].length; i < l; i++) {
+				if (this._subscriptions[uri][i] == fn) {
+					this._subscriptions[uri].splice(i, 1);
+				}
+			}
+			if (this._subscriptions[uri].length == 0) {
+				delete this._subscriptions[uri];
+				this.send('unsubscribe', uri);
+			}
+		}
+		
+		return this;
+	};
+
 		
 	IOBus.prototype.messageHandler = function(messageString) 
 	{
 		var message = $.parseJSON(messageString);
 		if (message.uri && message.data && message.uri in this._subscriptions){
-				for (var i = 0, ii = this._subscriptions[message.uri].length; i < ii; i++) 
+				for (var i = 0, l = this._subscriptions[message.uri].length; i < l; i++) {
 					this._subscriptions[message.uri][i].apply(this, [message.data]);
+				}
 		}
-	}	
+	}
 		
 	IOBus.prototype.connect = function () 
 	{
@@ -50,7 +71,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		.on('disconnect', function () 
 				{ 
 					self.connected = false;
-					if (self.autoReconnect) 
+					if (self.options.autoReconnect) 
 					{
 						self.connect();
 						self.reconnecting = true;
@@ -59,11 +80,14 @@ define( ["../socket.io/socket.io.js"] ,function() {
 				}
 			)
 		.on('message', function(message){self.messageHandler(message);}).connect();
+		
+		return this;
 	};
 		
 	IOBus.prototype.send = function (method, uri, data) 
 	{
 		this._socket = this._socket.send({method: method, uri : uri, data : data});
+		return this;
 	};
 	
 	

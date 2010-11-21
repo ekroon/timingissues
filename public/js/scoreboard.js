@@ -31,6 +31,7 @@ require(["IOBus", "util", "js/countdown/jquery.countdown.min.js"], function(IOBu
 		onTick: setLayout, serverSync: util.getServerTime});
 		
 		bus.connect();
+
 		
  	});
 

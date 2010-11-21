@@ -1,10 +1,10 @@
 require(["IOBus", "util"], function(IOBus, util) {
 	
 	function sendScore() {
-		var message = {type : 'score-update', data : 
+		var data = 
 		{home: homeScore.get(), away : awayScore.get(),
-			finalScore : $('#final-score:checked').val()==null}};
-		bus.send('put', util.getPath() + util.getQuery(), message);
+			finalScore : $('#final-score:checked').val()==null};
+		bus.send('put', util.getPath() + util.getQuery(), data);
 	}
 	
 	var bus = new IOBus();
