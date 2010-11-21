@@ -27,9 +27,10 @@ define( ["../socket.io/socket.io.js"] ,function() {
 	
 	IOBus.prototype.unsubscribe = function(uri, fn){
 		if (uri in this._subscriptions){
-			for (var i = 0, l = this._subscriptions[uri].length; i < l; i++) {
+			for (var i = 0; i < this._subscriptions[uri].length; i++) {
 				if (this._subscriptions[uri][i] == fn) {
 					this._subscriptions[uri].splice(i, 1);
+					i--;
 				}
 			}
 			if (this._subscriptions[uri].length == 0) {
