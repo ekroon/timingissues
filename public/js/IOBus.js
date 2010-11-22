@@ -8,6 +8,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		this.connected = false;
 		this.reconnecting = false;
 		this._subscriptions = {};
+		this._events = {};
 		this._callback = [];
 		
 	}
@@ -42,7 +43,6 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		
 		return this;
 	};
-
 		
 	IOBus.prototype.messageHandler = function(messageString) 
 	{
@@ -67,7 +67,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		self._socket
 		.on('connect', function() {
 			self.connected = true;
-			self.onConnect();
+			self.fire('connect');
 			self.send('client-time', '',{time : new Date() });
 			if (self.reconnecting) {
 				for (uri in self._subscriptions) {
@@ -84,7 +84,7 @@ define( ["../socket.io/socket.io.js"] ,function() {
 						self.connect();
 						self.reconnecting = true;
 					}
-					self.onDisconnect();
+					self.fire('disconnect');
 				}
 			)
 		.on('message', function(message){self.messageHandler(message);}).connect();
@@ -103,14 +103,29 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		return this;
 	};
 	
-	
-	IOBus.prototype.onConnect = function() 
-	{
+	IOBus.prototype.on = function(name, fn){
+		if (!(name in this._events)) this._events[name] = [];
+		this._events[name].push(fn);
+		return this;
 	};
-	
-	IOBus.prototype.onDisconnect = function() 
-	{
-	}; 
+  
+  IOBus.prototype.fire = function(name, args){
+		if (name in this._events){
+			for (var i = 0; i < this._events[name].length; i++) 
+				this._events[name][i].apply(this, args === undefined ? [] : args);
+		}
+		return this;
+	};
+  
+  IOBus.prototype.removeEvent = function(name, fn){
+		if (name in this._events){
+			for (var i = 0; i < this._events[name].length; i++) {
+        if (this._events[name][i] == fn) this._events[name].splice(i, 1);
+        i--;
+			}
+		}
+		return this;
+	};
 
 	return IOBus;
 }

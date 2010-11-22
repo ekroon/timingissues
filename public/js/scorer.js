@@ -13,12 +13,12 @@ require(["IOBus", "util"], function(IOBus, util) {
 	}
 	
 	var bus = new IOBus();
-	bus.onConnect = function () {
+	bus.on('connect', function () {
 		$('#update-score').removeAttr('disabled');
-	};
-	bus.onDisconnect = function () {
+	});
+	bus.on('disconnect', function () {
 		$('#update-score').attr('disabled', true);
-	};
+	});
 	
 	function score(object) {
   	var score = 0;
