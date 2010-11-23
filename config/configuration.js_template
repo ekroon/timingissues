@@ -1,5 +1,6 @@
 var configuration = {
     portNumber : 8888,
-    listen : null // null listens on all available addresses, more specific e.g.
+    listen : null, // null listens on all available addresses, more specific e.g.
+    debug : true
 }
 module.exports = configuration;

@@ -1,2 +1,3 @@
 .*
 config/configuration.js
+config/redis.conf
