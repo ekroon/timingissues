@@ -47,6 +47,11 @@ hub.prototype._getUriTree = function (uri) {
     return parts;
 }
 
+hub.prototype._defaultRedisCallback = function (err, status) {
+    if (err) throw err;
+    consolo.log(status);
+}
+
 hub.prototype._getUriParent = function(uri) {
     var parts = uri.split(this._options.uriSeperator);
     if (parts.length > 1) {
@@ -69,14 +74,23 @@ hub.prototype.init = function() {
 }
 
 hub.prototype.handleMessage = function (channelName, message, channelPattern) {
-    //for all uris send message to clients
-    this._getUriTree(channelName).forEach(function(uri) {
-        this._pub.smembers(hubKey(this._options.uriPrefix, uri), function (err, clientIds){
-            clientIds.forEach(function(clientId) {
-                this._emit('message', clientId);
+    //for all subscriptions send message
+    this.getSubscriptions(channelName, channelPattern).forEach(function(clientId) {
+        this._emit('message', clientId);
+    });
+}
+
+hub.prototype.getSubscriptions = function (channelName, channelPattern) {
+    var returnClientIds = [];
+    this._getUriTree(channelName).forEach(function(uri) { // for uri and each ancestor
+        this._pub.smembers(hubKey(this._options.uriPrefix, uri), function (err, clientIds){ // get clients
+            clientIds.forEach(function (clientId) { // for each client
+                //push to return val
+                returnClientIds.push(clientId);
             });
         });
     });
+    return returnClientIds;      
 }
 
 hub.prototype.subscribe = function(clientId, uri) {
@@ -96,9 +110,9 @@ hub.prototype.unsubscribe = function(clientId, uri) {
     if (clientId != undefined && uri != undefined) {
         
         // remove uri from clientkey
-        this._pub.srem(hubKey(this._options.clientPrefix, clientId), uri);
+        this._pub.srem(hubKey(this._options.clientPrefix, clientId), uri, _defaultRedisCallback);
         //remove client from urikey
-        this._pub.srem(hubKey(this._options.uriPrefix, uri), clientId);
+        this._pub.srem(hubKey(this._options.uriPrefix, uri), clientId, _defaultRedisCallback);
         
     }
     
@@ -108,13 +122,10 @@ hub.prototype.unsubscribeClient = function(clientId) {
     
     if (clientId != undefined) {
         this._pub.smembers(hubKey(this._options.clientPrefix, clientId), function (err, uris) { // get client uris
+           if (err) {throw err;}
            uris.forEach(function(uri) { //for each uri
-                //remove client from urikey
-                this._pub.srem(hubKey(this._options.uriPrefix, uri), clientId);
-                // remove uri from clientkey
-                this._pub.srem(hubKey(this._options.clientPrefix, clientId), uri);
-                
-                //if urikey empty --> remove? expensive i/o
+                this.unsubscribe(clientId, uri);
+                //if urikey empty --> remove? expensive i/o, however need unsubscribing from redis too.
            });
            // delete clientkey
             this._pub.del(hubKey(this._options.clientPrefix, clientId));

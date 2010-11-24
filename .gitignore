@@ -1,3 +1,4 @@
 .*
 config/configuration.js
 config/redis.conf
+data/dump.rdb
