@@ -29,7 +29,7 @@ if ((config.listen || null) == null) {
 
 var app = express.createServer();
 var pubsubhub = require('pubsubhub');
-var hub = pubsubhub.createHub();
+var hub = pubsubhub.createHub(config.redisdb);
 
 hub.on('initialized', function () {
     require('webrouter')(app);
