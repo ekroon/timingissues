@@ -20,6 +20,20 @@ var hub = function hub (db) {
 
 sys.inherits(hub, EventEmitter);
 
+var callbackHandler = function (counter, fn) {
+    
+    var error = null;
+    
+    var ret = function (err, result) {
+        if (err && !error) error = err;
+        counter--;
+        if (counter == 0) fn(error, 'ok');
+    }
+    
+    return ret;
+    
+}
+
 hub.prototype._createKey = function() {
     if (arguments.length > 0) {
         return Array.prototype.slice.call(arguments).join(this._config.keySeperator);
@@ -61,7 +75,7 @@ hub.prototype._getUriParent = function(uri) {
     return null;
 }
 
-hub.prototype.init = function() {
+hub.prototype.init = function(fn) {
     this._sub = redis.createClient();
     this._sub.select(this._config.db);
     this._pub = redis.createClient();
@@ -69,7 +83,7 @@ hub.prototype.init = function() {
     
     var self = this;
     
-    this._sub.incr(this._globalKey(this._config.hubIdSequence), function(err, val) {self._config.hubId = val; self.emit('initialized');});
+    this._sub.incr(this._globalKey(this._config.hubIdSequence), function(err, val) {self._config.hubId = val; fn(err, val);});
     return this;
 }
 
@@ -90,17 +104,20 @@ hub.prototype.getSubscriptions = function (channelName, channelPattern) {
             });
         });
     });
-    return returnClientIds;      
+    return returnClientIds;   
 }
 
 hub.prototype.subscribe = function(clientId, uri, fn) {
-        
+    
+    
     if (clientId != undefined && uri != undefined && fn != undefined) {
         
+        var cb = new callbackHandler(2, fn);
+        
         // push uri to clientkey
-        this._pub.sadd(this._hubKey(this._config.clientPrefix, clientId), uri, fn);
+        this._pub.sadd(this._hubKey(this._config.clientPrefix, clientId), uri, cb);
         //push client to urikey
-        this._pub.sadd(this._hubKey(this._config.uriPrefix, uri), clientId, fn);
+        this._pub.sadd(this._hubKey(this._config.uriPrefix, uri), clientId, cb);
         
     }
 }

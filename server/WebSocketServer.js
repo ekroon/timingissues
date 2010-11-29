@@ -31,7 +31,7 @@ var app = express.createServer();
 var pubsubhub = require('pubsubhub');
 var hub = pubsubhub.createHub(config.redisdb);
 
-hub.on('initialized', function () {
+hub.on('initialized', function (err, result) {
     require('webrouter')(app);
 
     app.listen(config.portNumber, config.listen || null, function() {
