@@ -29,9 +29,9 @@ if ((config.listen || null) == null) {
 
 var app = express.createServer();
 var pubsubhub = require('pubsubhub');
-var hub = pubsubhub.createHub(config.redisdb);
+var hub = pubsubhub.createHub({db: config.redisdb});
 
-hub.on('initialized', function (err, result) {
+hub.init( function (err, result) {
     require('webrouter')(app);
 
     app.listen(config.portNumber, config.listen || null, function() {
@@ -39,5 +39,3 @@ hub.on('initialized', function (err, result) {
         require('websocket')(app,pubsubhub);
     });
 });
-
-hub.init();
