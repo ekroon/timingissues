@@ -12,6 +12,7 @@ var hub = function hub (options) {
         hubIdSequence : 'hubIdSequence',
         clientPrefix : 'client',
         uriPrefix : 'uri',
+        callbackPrefix : 'callback',
         hubId : 0, // will be overwritten
         db : 0,
         host : '127.0.0.1',
@@ -39,7 +40,7 @@ var callbackHandler = function (numCallbacks, fn) {
     var ret = function (err, result) {
         if (err && !error) error = err;
         numCallbacks--;
-        if (numCallbacks == 0) fn(error, result);
+        if (numCallbacks == 0 && typeof(fn) == 'function') fn(error, result);
     }
     
     return ret;
@@ -89,7 +90,7 @@ hub.prototype.init = function(fn) {
     this._pub.select(this._config.db);
     
     var self = this;
-    this._sub.incr(this._globalKey(this._config.hubIdSequence), function(err, val) {
+    this._pub.incr(this._globalKey(this._config.hubIdSequence), function(err, val) {
         self._config.hubId = val;
         self._sub.subscribeTo('reply:' + self._hubKey(), self.messageHandler.bind(self));
         fn(err, val);
@@ -101,13 +102,14 @@ hub.prototype.init = function(fn) {
 hub.prototype._sendMessage = function(message) {
     var self = this;
     return function(clientId, uri) {
-        self.emit('messageFor:' + clientId + ':onUri:' + uri, null, message.sender, message.body);
+        self.emit('messageFor:' + clientId + ':onUri:' + uri, null, message.sender, message.cbId, message.body);
     }
 }
 
 hub.prototype._sendReply = function(message) {
     var clientId = message.recipient.split(':').pop();
-    this.emit('replyFor:' + clientId, null, message.sender, message.body);
+    var cbId = message.cbId;
+    this.emit('replyFor:' + clientId + ':withId:' + cbId, null, message.sender, message.body);
 }
 
 hub.prototype.messageHandler = function (channelName, messageString, channelPattern) {
@@ -194,7 +196,12 @@ hub.prototype.unsubscribeClient = function(clientId, fn) {
     
     var self = this;
     if (clientId != undefined) {
-        this.removeAllListeners('replyFor:' + clientId);
+        this._pub.smembers(self._hubKey(self._config.clientPrefix, clientId, self._config.callbackPrefix), function(err, ids) {
+            ids.forEach( function (id) {
+                self.removeAllListeners('replyFor:' + clientId + ':withId:' + val);
+            });
+            self._pub.del(self._hubKey(self._config.clientPrefix, clientId, self._config.callbackPrefix), function(err, result){});
+        })
         this._pub.smembers(this._hubKey(this._config.clientPrefix, clientId), function (err, uris) { // get client uris
            if (err) {throw err;}
            var cb = new callbackHandler(uris.length, fn);
@@ -205,18 +212,31 @@ hub.prototype.unsubscribeClient = function(clientId, fn) {
     }
 }
 
-hub.prototype.publish = function(clientId, uri, msg, fn) {
-    var message = {type : 'msg', sender : this._hubKey(this._config.clientPrefix, clientId), body : msg, time: new Date() }
-    this._pub.publish(uri, JSON.stringify(message), fn);
+hub.prototype.publish = function(clientId, uri, msg, callback, fn) {
+
+    var self = this;
+    var cbId;
+    
+    var ret = function () {
+        var message = {type : 'msg', sender : self._hubKey(self._config.clientPrefix, clientId), cbId : cbId,  body : msg }
+        self._pub.publish(uri, JSON.stringify(message), fn);
+    }
+    
+    if (typeof(callback) == 'function') {
+        this._pub.incr(this._hubKey(this._config.callbackPrefix), function(err, val) {
+            cbId = val;
+            self.on('replyFor:' + clientId + ':withId:' + val, callback);
+            self._pub.sadd(self._hubKey(self._config.clientPrefix, clientId, self._config.callbackPrefix), val, ret);
+        });
+    }
+    else {
+        ret();
+    }
+    
 }
 
-hub.prototype.onReply = function(clientId, callback, fn) {
-    this.on('replyFor:' + clientId, callback);
-    fn(null, 'ok');
-}
-
-hub.prototype.reply = function(clientId, recipient, msg, fn) {
-    var message = {type : 'reply', sender : this._hubKey(this._config.clientPrefix, clientId), recipient : recipient, body : msg};
+hub.prototype.reply = function(clientId, recipient, cbId, msg, fn) {
+    var message = {type : 'reply', sender : this._hubKey(this._config.clientPrefix, clientId), recipient : recipient, cbId : cbId, body : msg};
     this._pub.publish('reply:' + this._getRecipientHub(recipient), JSON.stringify(message), fn);
 }
 

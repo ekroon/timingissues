@@ -7,7 +7,7 @@ require(["IOBus", "util"], function(IOBus, util) {
 		bus.send('put', util.getPath() + util.getQuery(), data, showUpdated);
 	}
 	
-	function showUpdated() {
+	function showUpdated(err, result) {
 		$("#updated-info").css('visibility','visible');
 		setTimeout(function(){$("#updated-info").css('visibility','hidden');}, 1000);
 	}

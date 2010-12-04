@@ -151,11 +151,11 @@ var tests = vows.describe('Pubsubhub Test').addBatch({
             'after subscribing and publishing': {
                 topic: function (a, hub) {
                     
-                    var pubMsg = function () {hub.publish('c2', 'uri1', { msg : 'test'}, function (err, result){})};
+                    var pubMsg = function () {hub.publish('c2', 'uri1', { msg : 'test'}, '', function (err, result){})};
                     hub.subscribe('c1', 'uri1', this.callback, pubMsg);
                 },
         
-                'client should get message': function (err, sender, result) {
+                'client should get message': function (err, sender, cbId, result) {
                     assert.isNull(err);
                     assert.deepEqual(result, {msg : 'test'});
                 }
@@ -181,15 +181,12 @@ var tests = vows.describe('Pubsubhub Test').addBatch({
                 topic: function (a, hub) {
                     var self = this;
                     var publishMsg = function () {
-                        hub.publish('c2', 'uri1', { msg : 'test'}, function (err, result){})
+                        hub.publish('c2', 'uri1', { msg : 'test'}, self.callback, function (err, result){})
                     };
-                    var subscribeReply = function () {
-                        hub.onReply('c2', self.callback, publishMsg.bind(this))
-                    };
-                    var sendReply = function (err, sender, msg) {
-                        hub.reply('c1', sender, msg, function() {});
+                    var sendReply = function (err, sender, cbId, msg) {
+                        hub.reply('c1', sender, cbId, msg, function() {});
                     }
-                    hub.subscribe('c1', 'uri1', sendReply, subscribeReply);
+                    hub.subscribe('c1', 'uri1', sendReply, publishMsg);
                 },
         
                 'client should get reply': function (err, sender, result) {

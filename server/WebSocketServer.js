@@ -36,6 +36,6 @@ hub.init( function (err, result) {
 
     app.listen(config.portNumber, config.listen || null, function() {
         sys.puts("Server running at http://"+(config.listen || "INADDR_ANY")+":"+config.portNumber+"/");
-        require('websocket')(app,pubsubhub);
+        require('websocket')(app,hub);
     });
 });
