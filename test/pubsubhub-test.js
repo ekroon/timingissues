@@ -8,6 +8,19 @@ redis.select(15);
 //   tests.run();
 //});
 
+var callbackHandler = function (numCallbacks, fn) {
+
+    var error = null;
+    
+    var ret = function (err, result) {
+        if (err && !error) error = err;
+        numCallbacks--;
+        if (numCallbacks == 0) fn(error, result);
+    }
+    
+    return ret;
+}
+
 var tests = vows.describe('Pubsubhub Test').addBatch({
     'pubsubhub': {
         topic: require('pubsubhub').createHub({db : 15}),
@@ -105,6 +118,14 @@ var tests = vows.describe('Pubsubhub Test').addBatch({
                             },
                             'should be empty' : function (err, result) {
                                 assert.deepEqual(result, []);
+                            },
+                            'and callbacks' : {
+                                topic : function (a,b,c,d,e,hub) {
+                                    return hub;
+                                },
+                                'should be empty' : function (hub) {
+                                    assert.equal(hub.listeners('uri1').length, 0);
+                                }
                             }
                         }
                     }
@@ -127,17 +148,54 @@ var tests = vows.describe('Pubsubhub Test').addBatch({
                 assert.isNull(err);
             },
             
-            'after subscribing client': {
+            'after subscribing and publishing': {
                 topic: function (a, hub) {
-                    hub.subscribe('c1', 'uri1', this.callback, function(err, result){
-                        hub.publish('uri1', { msg : 'test'}, function (err, result){});
-                    });
+                    
+                    var pubMsg = function () {hub.publish('c2', 'uri1', { msg : 'test'}, function (err, result){})};
+                    hub.subscribe('c1', 'uri1', this.callback, pubMsg);
                 },
         
-                'should get message': function (err, result) {
+                'client should get message': function (err, sender, result) {
                     assert.isNull(err);
                     assert.deepEqual(result, {msg : 'test'});
-                } 
+                }
+            }
+        }
+    }
+}).addBatch({
+    'pubsubhub3': {
+        topic: require('pubsubhub').createHub({db : 15}),
+        'should not be empty' : function (hub) {
+            assert.isNotNull(hub);
+        },
+        'after init' : {
+                topic : function (hub) {
+                var self = this;
+                hub.init(this.callback);
+            },
+            'we get no error': function(err, result) {
+                assert.isNull(err);
+            },
+            
+            'after subscribing and publishing': {
+                topic: function (a, hub) {
+                    var self = this;
+                    var publishMsg = function () {
+                        hub.publish('c2', 'uri1', { msg : 'test'}, function (err, result){})
+                    };
+                    var subscribeReply = function () {
+                        hub.onReply('c2', self.callback, publishMsg.bind(this))
+                    };
+                    var sendReply = function (err, sender, msg) {
+                        hub.reply('c1', sender, msg, function() {});
+                    }
+                    hub.subscribe('c1', 'uri1', sendReply, subscribeReply);
+                },
+        
+                'client should get reply': function (err, sender, result) {
+                    assert.isNull(err);
+                    assert.deepEqual(result, {msg : 'test'});
+                }
             }
         }
     }
