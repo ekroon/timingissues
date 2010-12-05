@@ -4,12 +4,22 @@ require(["IOBus", "util"], function(IOBus, util) {
 		var data = 
 		{home: homeScore.get(), away : awayScore.get(),
 			finalScore : $('#final-score:checked').val()==null};
-		bus.send('put', util.getPath() + util.getQuery(), data, showUpdated);
+			$('#update-score').attr('disabled', true);
+		bus.send('put', util.getPath() + util.getQuery(), data, updateResult);
 	}
 	
-	function showUpdated(err, result) {
-		$("#updated-info").css('visibility','visible');
-		setTimeout(function(){$("#updated-info").css('visibility','hidden');}, 1000);
+	function updateResult(err, sender, body) {
+		if (!err) {
+			if (body.result == 'updated') {
+				$("#updated-info").toggle();
+				setTimeout(function(){$("#updated-info").toggle()}, 1000);
+			}
+			else {
+				$("#not-updated-info").toggle();
+				$('#update-score').removeAttr('disabled');
+				setTimeout(function(){$("#not-updated-info").toggle()}, 1000);
+			}
+		}
 	}
 	
 	var bus = new IOBus();
@@ -20,7 +30,7 @@ require(["IOBus", "util"], function(IOBus, util) {
 		$('#update-score').attr('disabled', true);
 	});
 	
-	function score(object) {
+	function score(object, updateButton) {
   	var score = 0;
   	
    	var retval = new function() 
@@ -37,12 +47,14 @@ require(["IOBus", "util"], function(IOBus, util) {
    	{
     	score = score + 1;
     	$(object).val(score);
+			updateButton.removeAttr('disabled');
    	}
    	
    	retval.down = function down() 
    	{
        score = Math.max(score - 1, 0);
        $(object).val(score);
+			 updateButton.removeAttr('disabled');
    	}
    	
    	retval.get = function get()
@@ -53,11 +65,14 @@ require(["IOBus", "util"], function(IOBus, util) {
    	return retval;
 	}
 	
-	var homeScore = score($('#home-score'));
-	var awayScore = score($('#away-score'));
+	var homeScore = score($('#home-score'),$('#update-score'));
+	var awayScore = score($('#away-score'),$('#update-score'));
 	
 	
 	$(document).ready(function() {
+		
+		$("not-updated-info").hide();
+		$("updated-info").hide();
 		
 		homeScore.set(0);
 		awayScore.set(0);

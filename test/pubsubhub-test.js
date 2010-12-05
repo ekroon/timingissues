@@ -183,15 +183,15 @@ var tests = vows.describe('Pubsubhub Test').addBatch({
                     var publishMsg = function () {
                         hub.publish('c2', 'uri1', { msg : 'test'}, self.callback, function (err, result){})
                     };
-                    var sendReply = function (err, sender, cbId, msg) {
-                        hub.reply('c1', sender, cbId, msg, function() {});
+                    var sendReply = function (err, sender, msgId, msg) {
+                        hub.reply('c1', sender, msgId, msg, function() {});
                     }
                     hub.subscribe('c1', 'uri1', sendReply, publishMsg);
                 },
         
-                'client should get reply': function (err, sender, result) {
+                'client should get reply': function (err, sender, body) {
                     assert.isNull(err);
-                    assert.deepEqual(result, {msg : 'test'});
+                    assert.deepEqual(body, {msg : 'test'});
                 }
             }
         }

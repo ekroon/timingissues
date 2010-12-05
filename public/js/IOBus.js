@@ -9,7 +9,8 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		this.reconnecting = false;
 		this._subscriptions = {};
 		this._events = {};
-		this._callback = [];
+		this._callback = {};
+    this._callbackCounter = 0;
 		
 	}
 	
@@ -49,8 +50,8 @@ define( ["../socket.io/socket.io.js"] ,function() {
 		var message = $.parseJSON(messageString);
 		
 		if (message.method != undefined && message.method == 'callback') {
-			this._callback[message.callback].call(this, message.err, message.result);
-			this._callback.splice(message.callback,1);
+			this._callback[message.callback].call(this, message.err, message.sender, message.body);
+			delete this._callback[message.callback];
 		}
 		
 		if (message.uri && message.body && message.uri in this._subscriptions){
@@ -96,8 +97,9 @@ define( ["../socket.io/socket.io.js"] ,function() {
 	{
 		var message = {method: method, uri : uri, body : msg};
 		if (fn) {
-			this._callback.push(fn);
-			message.callback = this._callback.length - 1;
+			this._callback[this._callbackCounter] = fn;
+			message.callback = this._callbackCounter;
+      this._callbackCounter++;
 		}
 		this._socket = this._socket.send(message);
 		return this;

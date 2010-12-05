@@ -25,5 +25,11 @@ body {
 #updated-info {
 	font-weight: bold;
 	color: #0d0;
-	visibility: hidden;
+	display: none;
+}
+
+#not-updated-info {
+	font-weight: bold;
+	color: #d00;
+	display: none;
 }

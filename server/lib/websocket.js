@@ -13,8 +13,14 @@ var websocket = function websocket(app,pubsubhub) {
     socket.on('clientMessage', function(message, client) {clientMessageHandler(message, client)});
     
     var hubMessageHandler = function(clientId) {
-        return function (err, sender, message) {
+        return function (err, sender, msgId, message) {
             socket.clients[clientId].send(JSON.stringify({method : 'put', body : message}));
+        }
+    }
+    
+    var callbackHandler = function(clientId, callbackId) {
+        return function(err, sender, body) {
+            socket.clients[clientId].send(JSON.stringify({method : 'callback', callback : callbackId, err : err, sender : sender, body : body}));
         }
     }
     
@@ -31,11 +37,9 @@ var websocket = function websocket(app,pubsubhub) {
         else if (message.method == 'put' || message.method == 'get') {
             var cb = function (){};
             if (message.callback != undefined) { // short callback, should be long
-              cb = function (err, result) {
-                client.send(JSON.stringify({method : 'callback', callback : message.callback, err : err, result : result}));
-              }
+              cb = callbackHandler(client.sessionId, message.callback);
             }
-            pubsubhub.publish(client.sessionId, message.uri, message.body, hubMessageHandler(client.sessionId), cb);
+            pubsubhub.publish(client.sessionId, message.uri, message.body, cb, function (err, result){});
         }
     }
     

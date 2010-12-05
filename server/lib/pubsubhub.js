@@ -70,7 +70,7 @@ hub.prototype._getUriTree = function (uri) {
         uriSet.push(parts[i-1] + this._config.uriSeperator + parts[i]);
     }
     
-    return parts;
+    return uriSet;
 }
 
 hub.prototype._getUriParent = function(uri) {
@@ -102,18 +102,17 @@ hub.prototype.init = function(fn) {
 hub.prototype._sendMessage = function(message) {
     var self = this;
     return function(clientId, uri) {
-        self.emit('messageFor:' + clientId + ':onUri:' + uri, null, message.sender, message.cbId, message.body);
+        self.emit('messageFor:' + clientId + ':onUri:' + uri, null, message.sender, message.msgId, message.body);
     }
 }
 
 hub.prototype._sendReply = function(message) {
     var clientId = message.recipient.split(':').pop();
-    var cbId = message.cbId;
-    this.emit('replyFor:' + clientId + ':withId:' + cbId, null, message.sender, message.body);
+    var msgId = message.msgId;
+    this.emit('replyFor:' + clientId + ':withId:' + msgId, null, message.sender, message.body);
 }
 
 hub.prototype.messageHandler = function (channelName, messageString, channelPattern) {
-    
     var message = JSON.parse(messageString);
     //for all subscriptions send message
     if (message.type == 'msg') {
@@ -198,7 +197,7 @@ hub.prototype.unsubscribeClient = function(clientId, fn) {
     if (clientId != undefined) {
         this._pub.smembers(self._hubKey(self._config.clientPrefix, clientId, self._config.callbackPrefix), function(err, ids) {
             ids.forEach( function (id) {
-                self.removeAllListeners('replyFor:' + clientId + ':withId:' + val);
+                self.removeAllListeners('replyFor:' + clientId + ':withId:' + id);
             });
             self._pub.del(self._hubKey(self._config.clientPrefix, clientId, self._config.callbackPrefix), function(err, result){});
         })
@@ -215,17 +214,17 @@ hub.prototype.unsubscribeClient = function(clientId, fn) {
 hub.prototype.publish = function(clientId, uri, msg, callback, fn) {
 
     var self = this;
-    var cbId;
+    var msgId;
     
     var ret = function () {
-        var message = {type : 'msg', sender : self._hubKey(self._config.clientPrefix, clientId), cbId : cbId,  body : msg }
+        var message = {type : 'msg', sender : self._hubKey(self._config.clientPrefix, clientId), msgId : msgId,  body : msg }
         self._pub.publish(uri, JSON.stringify(message), fn);
     }
     
     if (typeof(callback) == 'function') {
         this._pub.incr(this._hubKey(this._config.callbackPrefix), function(err, val) {
-            cbId = val;
-            self.on('replyFor:' + clientId + ':withId:' + val, callback);
+            msgId = val;
+            self.on('replyFor:' + clientId + ':withId:' + msgId, callback);
             self._pub.sadd(self._hubKey(self._config.clientPrefix, clientId, self._config.callbackPrefix), val, ret);
         });
     }
@@ -235,8 +234,8 @@ hub.prototype.publish = function(clientId, uri, msg, callback, fn) {
     
 }
 
-hub.prototype.reply = function(clientId, recipient, cbId, msg, fn) {
-    var message = {type : 'reply', sender : this._hubKey(this._config.clientPrefix, clientId), recipient : recipient, cbId : cbId, body : msg};
+hub.prototype.reply = function(clientId, recipient, msgId, msg, fn) {
+    var message = {type : 'reply', sender : this._hubKey(this._config.clientPrefix, clientId), recipient : recipient, msgId : msgId, body : msg};
     this._pub.publish('reply:' + this._getRecipientHub(recipient), JSON.stringify(message), fn);
 }
 
