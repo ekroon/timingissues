@@ -8,7 +8,7 @@ var router = function router(app) {
         app.use(require('express').staticProvider(config.publicRoot));
     });
 
-    app.get('/scoreboard/:field?', function(req, res) {
+    app.get('/scoreboard/:tournament/:field', function(req, res) {
         res.render('scoreboard.html', {layout: false});
     });
     app.get('/scorer/:field?', function(req, res) {

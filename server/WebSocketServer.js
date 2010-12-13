@@ -32,7 +32,6 @@ var pubsubhub = require('pubsubhub');
 var hub = pubsubhub.createHub({db: config.redisdb});
 
 hub.init( function (err, result) {
-    console.log('hubId: ' + result)
     require('webrouter')(app);
 
     app.listen(config.portNumber, config.listen || null, function() {

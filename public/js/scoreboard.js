@@ -1,4 +1,4 @@
-require(["IOBus", "util", "js/countdown/jquery.countdown.min.js"], function(IOBus, util) {
+require(["IOBus", "util", "/js/countdown/jquery.countdown.min.js"], function(IOBus, util) {
 	
 	var setScore = function(scoreObject) {
 		$('#home-score').html(scoreObject.home);
