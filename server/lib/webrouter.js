@@ -9,7 +9,10 @@ var router = function router(app) {
     });
 
     app.get('/scoreboard/:tournament/:field', function(req, res) {
-        res.render('scoreboard.html', {layout: false});
+        res.render('scoreboard.html', {layout: false, locals : {field : req.params.field, tournament : req.params.tournament}});
+    });
+    app.get('/clock/:tournament/:field', function(req, res) {
+        res.render('clock.html', {layout: false, locals : {field : req.params.field, tournament : req.params.tournament}});
     });
     app.get('/scorer/:field?', function(req, res) {
         res.render('scorer.html', {layout: false});

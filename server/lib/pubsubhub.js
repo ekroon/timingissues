@@ -212,7 +212,7 @@ hub.prototype.unsubscribeClient = function(clientId, fn) {
 }
 
 hub.prototype.publish = function(clientId, uri, msg, callback, fn) {
-
+    
     var self = this;
     var msgId;
     

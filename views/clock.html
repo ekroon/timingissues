@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+<title>Scoreboard</title>
+<link href="/css/clock.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" data-main="clock" src="/js/requireplugins-jquery-1.4.4.js"></script>
+</head>
+<body>
+<div id="main" class="">
+	<div id="field" class="" >Field <%= field %></div>
+	<div id="clock" class="clock" >00:00</div>
+</div>
+<span id="sound"></span>
+<script type="text/javascript">
+	var tournament = '<%= tournament %>';
+	var field = '<%= field %>';
+</script>
+</body>
+</html>

@@ -7,7 +7,7 @@
 </head>
 <body>
 <div id="main" class="">
-	<div id="field" class="" >[field]</div>
+	<div id="field" class="" >Field <%= field %></div>
 	<div id="home-score" class="score" >0</div>
 	<div id="away-score" class="score" >0</div>
 	<div id="clock" class="clock" >00:00</div>
@@ -15,6 +15,9 @@
 	<div id="away-team" class="team" >[away]</div>
 </div>
 <span id="sound"></span>
-
+<script type="text/javascript">
+	var tournament = '<%= tournament %>';
+	var field = '<%= field %>';
+</script>
 </body>
 </html>

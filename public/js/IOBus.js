@@ -1,4 +1,4 @@
-define( ["../socket.io/socket.io.js"] ,function() {
+define( ["/socket.io/socket.io.js"] ,function() {
 	var IOBus = function (options) {
 		
 		this.options = { 
