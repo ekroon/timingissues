@@ -20,5 +20,8 @@ var router = function router(app) {
     app.get('/time', function(req, res) {
         res.send(JSON.stringify(new Date()));
     });
+    app.get('/admin/:tournament', function(req, res) {
+        res.render('admin.html', {layout: false, locals : {tournament : req.params.tournament}});
+    });
 };
 module.exports = router;

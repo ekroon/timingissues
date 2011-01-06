@@ -17,6 +17,7 @@ hub.init( function (err, result) {
   hub.subscribe(serverName, '/scorer', scoreUpdate, function (err, result) {});
   hub.subscribe(serverName, '/scoreboard', returnMatches, function(err, result) {});
   hub.subscribe(serverName, '/clock', returnMatches, function(err, result) {});
+  hub.subscribe(serverName, '/admin', returnMatches, function(err, result) {});
   console.log('started');
   
 });
@@ -30,7 +31,14 @@ var scoreUpdate = function (err, sender, msgId, body) {
 var returnMatches = function (err, sender, msgId, body) {
   //console.log('return matches');
   var d = new Date();
-  couch.view('views/matches', {startkey : ["tournament/" + body.tournament, body.field, jsonDate(d)], endkey : ["tournament/devilsheaven2011","1",{}]}, function (err, res) {
+  var where = {};
+  if (body.tournament != undefined && body.field != undefined) {
+    where = {startkey : ["tournament/" + body.tournament, body.field, jsonDate(d)], endkey : ["tournament/" + body.tournament, body.field, {}]};
+  }
+  if (body.tournament != undefined && body.field == undefined) {
+    where = {startkey : ["tournament/" + body.tournament, "", ""], endkey : ["tournament/" + body.tournament, {}, {}]};
+  }
+  couch.view('views/matches', where, function (err, res) {
     console.log(body.tournament + ", " + body.field + ", " + jsonDate(d) + " -> " + res.rows.length);
     hub.reply(serverName, sender, msgId, {matches : res.rows}, function() {});
   });

@@ -1,9 +1,39 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>score board admin page</title>
+<title>admin page</title>
+<link href="/css/admin.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript" data-main="admin" src="/js/requireplugins-jquery-1.4.4.js"></script>
+<script src="http://ajax.microsoft.com/ajax/jquery.templates/beta1/jquery.tmpl.min.js"></script>
 </head>
 <body>
+  
+<script id="matchTemplate" type="text/x-jquery-tmpl"> 
+    <tr class="${$item.rowClass()}">
+        <td>${value["field"]}</td>
+        <td>${value["starttime"]}</td>
+        <td>${value["stoptime"]}</td>
+        <td>${value["hometeam"]}</td>
+        <td>${value["awayteam"]}</td>
+        <td>${value["homescore"]} - ${value["awayscore"]}</td>
+    </tr>
+</script>
+
+<table id="matches">
+  <thead><tr>
+    <td>Field</td>
+    <td>Start time</td>
+    <td>Stop time</td>
+    <td>Home</td>
+    <td>Away</td>
+    <td>Score</td>
+  </tr></thead>
+  <tbody></tbody>
+</table>
+
+<script type="text/javascript">
+	var tournament = '<%= tournament %>';
+</script>
 
 </body>
 </html>
